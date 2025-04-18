@@ -4,6 +4,7 @@ import { UpdateActorDto } from './dto/update-actor.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Actor } from './entities/actor.entity';
 import { Model } from 'mongoose';
+import { GetActorDto } from './dto/get-actor.dto';
 
 @Injectable()
 export class ActorsService {
@@ -17,9 +18,21 @@ export class ActorsService {
     }
   }
 
-  async findAll() {
+  async findAll(query: GetActorDto) {
     try {
-      return await this.actor.find()
+      const { search, page = 1, limit = 10, film, order = 'desc', column = 'name'} = query;
+      interface IFilterObj {
+        name?: {$regex: string, $options: string}
+        film?: string
+      }
+
+      let filter: IFilterObj = {}
+
+      if (column == "name" && search) {
+        filter.name = { $regex: search, $options: 'i' }
+      }
+
+      return await this.actor.find(filter).populate('films').sort({[column]: order === 'asc' ? 1 : -1 }).limit(limit).skip((page - 1) * limit)
     } catch (error) {
       throw new InternalServerErrorException('Internal server error')
     }

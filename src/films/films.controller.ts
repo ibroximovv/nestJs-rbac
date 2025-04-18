@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { FilmsService } from './films.service';
 import { CreateFilmDto } from './dto/create-film.dto';
 import { UpdateFilmDto } from './dto/update-film.dto';
@@ -6,6 +6,7 @@ import { AuthorizaitonGuard } from 'src/authorizaiton/authorizaiton.guard';
 import { RolesGuard } from 'src/roles/roles.guard';
 import { RolesDecorator } from 'src/auth/decorators/role.decorator';
 import { Roles } from 'src/auth/enum/roles.enum';
+import { GetFilmDto } from './dto/get-film.dto';
 
 @Controller('films')
 export class FilmsController {
@@ -20,8 +21,8 @@ export class FilmsController {
   }
 
   @Get()
-  findAll() {
-    return this.filmsService.findAll();
+  findAll(@Query() query: GetFilmDto) {
+    return this.filmsService.findAll(query);
   }
 
   @Get(':id')

@@ -4,6 +4,7 @@ import { UpdateFilmDto } from './dto/update-film.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Film } from './entities/film.entity';
 import { Model } from 'mongoose';
+import { GetFilmDto } from './dto/get-film.dto';
 
 @Injectable()
 export class FilmsService {
@@ -16,9 +17,20 @@ export class FilmsService {
     }
   }
 
-  async findAll() {
+  async findAll(query: GetFilmDto) {
     try {
-      return await this.film.find();
+      const { search, page = 1, limit = 10, order = 'desc', column = 'name'} = query;
+      interface IFilterObj {
+        name?: {$regex: string, $options: string}
+      }
+
+      let filter: IFilterObj = {}
+
+      if (column == "name" && search) {
+        filter.name = { $regex: search, $options: 'i' }
+      }
+
+      return await this.film.find().sort({[column]: order === 'asc' ? 1 : -1 }).limit(limit).skip((page - 1) * limit);
     } catch (error) {
       throw new InternalServerErrorException('Internal server error')
     }
